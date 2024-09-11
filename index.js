@@ -43,6 +43,22 @@ async function run() {
         res.send(result);
     })
 
+    // get jobs by category
+    app.get('/jobs', async (req, res) => {
+        let query = {};
+        
+        if (req.query?.category) {
+            //  regex with the 'i' option for case-insensitive search
+            query = { category: { $regex: new RegExp(`^${req.query.category}$`, 'i') } };
+        }
+        
+        console.log(query);
+        const result = await jobsCollection.find(query).toArray();
+        
+        res.send(result);
+    });
+    
+
 
 
   } finally {
