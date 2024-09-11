@@ -29,9 +29,19 @@ async function run() {
     const jobsCollection = client.db('JobDB').collection('jobs');
 
 
+    // get all categories
+    app.get('/categories', async(req, res)=>{
+        const cursor = categoryCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
