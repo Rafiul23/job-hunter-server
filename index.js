@@ -36,6 +36,12 @@ async function run() {
         res.send(result);
     })
 
+    // get all hotjobs
+    app.get('/hotjobs', async(req, res)=>{
+        const cursor = hotJobsCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
 
 
 
