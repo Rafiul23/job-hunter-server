@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = 5000 || process.env.PORT;
-const cors = require('cors');
+const cors = require("cors");
 
 // middlewares
 app.use(cors());
@@ -82,6 +82,13 @@ async function run() {
       res.send(result);
     });
 
+    // get single job data
+    app.get('/job/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)};
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    })
 
   } finally {
     // Ensures that the client will close when you finish/error
