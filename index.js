@@ -4,6 +4,7 @@ require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = 5000 || process.env.PORT;
 const cors = require("cors");
+const bcrypt = require('bcrypt');
 
 // middlewares
 app.use(cors());
@@ -33,6 +34,7 @@ async function run() {
     const categoryCollection = client.db("JobDB").collection("categories");
     const hotJobsCollection = client.db("JobDB").collection("hotjobs");
     const jobsCollection = client.db("JobDB").collection("jobs");
+    const userCollection = client.db("JobDB").collection("users");
 
     // get all categories
     app.get("/categories", async (req, res) => {
@@ -83,12 +85,25 @@ async function run() {
     });
 
     // get single job data
-    app.get('/job/:id', async(req, res)=>{
+    app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await jobsCollection.findOne(query);
       res.send(result);
+    });
+    
+    // create a new user
+    app.post('/user', async(req, res)=>{
+      const newUser = req.body;
+      const exist = await userCollection.findOne({email: newUser.email});
+      if(exist){
+        return res.send({message: 'User already exists'});
+      }
+      const hashedPassword = bcrypt.hashSync(newUser.password, 14);
+      const result = await userCollection.insertOne({...newUser, password: hashedPassword});
+      res.send(result);
     })
+
 
   } finally {
     // Ensures that the client will close when you finish/error
