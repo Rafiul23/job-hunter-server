@@ -4,7 +4,7 @@ require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = 5000 || process.env.PORT;
 const cors = require("cors");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 // middlewares
 app.use(cors());
@@ -91,20 +91,34 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     });
-    
+
     // create a new user
-    app.post('/user', async(req, res)=>{
+    app.post("/user", async (req, res) => {
       const newUser = req.body;
-      const exist = await userCollection.findOne({email: newUser.email});
-      if(exist){
-        return res.send({message: 'User already exists'});
+      const exist = await userCollection.findOne({ email: newUser.email });
+      if (exist) {
+        return res.send({ message: "User already exists" });
       }
       const hashedPassword = bcrypt.hashSync(newUser.password, 14);
-      const result = await userCollection.insertOne({...newUser, password: hashedPassword});
+      const result = await userCollection.insertOne({
+        ...newUser,
+        password: hashedPassword,
+      });
       res.send(result);
-    })
+    });
 
+    // get a user by email
+    app.get("/user", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = {
+          email: req.query?.email,
+        };
+      }
 
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
