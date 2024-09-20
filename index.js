@@ -35,6 +35,7 @@ async function run() {
     const hotJobsCollection = client.db("JobDB").collection("hotjobs");
     const jobsCollection = client.db("JobDB").collection("jobs");
     const userCollection = client.db("JobDB").collection("users");
+    const favouriteColloection = client.db('JobDB').collection('favouritejobs');
 
     // get all categories
     app.get("/categories", async (req, res) => {
@@ -99,12 +100,18 @@ async function run() {
       if (exist) {
         return res.send({ message: "User already exists" });
       }
+     if(newUser?.password){
       const hashedPassword = bcrypt.hashSync(newUser.password, 14);
       const result = await userCollection.insertOne({
         ...newUser,
         password: hashedPassword,
-      });
+      })
       res.send(result);
+    } else {
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    };
+
     });
 
     // get a user by email
@@ -119,6 +126,17 @@ async function run() {
       const result = await userCollection.findOne(query);
       res.send(result);
     });
+
+    // post a fovourite job in a collection
+    app.post('/favourite', async(req, res)=>{
+      const favJob = req.body;
+      const result = await favouriteColloection.insertOne(favJob);
+      res.send(result);
+    })
+
+    
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
