@@ -129,9 +129,21 @@ async function run() {
 
     // post a fovourite job in a collection
     app.post('/favourite', async(req, res)=>{
+      let query = {};
+      if(req.query?.email && req.query?.id){
+        query = {
+          userEmail: req.query.email,
+          job_id: req.query.id
+        }
+      };
+      const isExist = await favouriteColloection.findOne(query);
+      if(isExist){
+       return res.send({message: 'This job already exists in your favourite list!'});
+      } else {
       const favJob = req.body;
       const result = await favouriteColloection.insertOne(favJob);
       res.send(result);
+      }
     })
 
     
