@@ -156,6 +156,14 @@ async function run() {
       }
       const result = await favouriteColloection.find(query).toArray();
       res.send(result);
+    });
+
+    // delete a favourite job
+    app.delete('/favourite/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await favouriteColloection.deleteOne(query);
+      res.send(result);
     })
     
 
