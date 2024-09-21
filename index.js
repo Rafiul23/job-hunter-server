@@ -146,6 +146,17 @@ async function run() {
       }
     })
 
+    // get favourite jobs list
+    app.get('/favourite', async(req, res)=>{
+      let query = {};
+      if(req.query?.email){
+        query = {
+          userEmail: req.query.email
+        }
+      }
+      const result = await favouriteColloection.find(query).toArray();
+      res.send(result);
+    })
     
 
 
