@@ -68,6 +68,13 @@ async function run() {
       res.send(result);
     });
 
+    // post a job
+    app.post('/job', async(req, res)=>{
+      const newJob = req.body;
+      const result = await jobsCollection.insertOne(newJob);
+      res.send(result);
+    })
+
     // search by job title
     app.get("/search", async (req, res) => {
       let query = {};
