@@ -127,6 +127,12 @@ async function run() {
       res.send(result);
     });
 
+    // get all users 
+    app.get('/users', async(req, res)=>{
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
+
     // post a fovourite job in a collection
     app.post('/favourite', async(req, res)=>{
       let query = {};
