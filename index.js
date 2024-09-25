@@ -134,13 +134,27 @@ async function run() {
     })
 
     // block an active user
-    app.patch('/user/:id', async(req, res)=>{
+    app.patch('/user/block/:id', async(req, res)=>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)};
       const options = {upsert: true};
       const updateStatus = {
         $set: {
           status: 'blocked'
+        }
+      };
+      const result = await userCollection.updateOne(filter,updateStatus, options);
+      res.send(result);
+    })
+
+    // unblock an user
+    app.patch('/user/active/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const options = {upsert: true};
+      const updateStatus = {
+        $set: {
+          status: 'active'
         }
       };
       const result = await userCollection.updateOne(filter,updateStatus, options);
