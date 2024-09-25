@@ -133,6 +133,20 @@ async function run() {
       res.send(result);
     })
 
+    // block an active user
+    app.patch('/user/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const options = {upsert: true};
+      const updateStatus = {
+        $set: {
+          status: 'blocked'
+        }
+      };
+      const result = await userCollection.updateOne(filter,updateStatus, options);
+      res.send(result);
+    })
+
     // post a fovourite job in a collection
     app.post('/favourite', async(req, res)=>{
       let query = {};
