@@ -38,6 +38,7 @@ async function run() {
     const favouriteColloection = client.db('JobDB').collection('favouritejobs');
     const appliedColloection = client.db('JobDB').collection('appliedjobs');
 
+    // job related api
     // get all categories
     app.get("/categories", async (req, res) => {
       const cursor = categoryCollection.find();
@@ -101,23 +102,12 @@ async function run() {
       res.send(result);
     });
 
+
     // post a fovourite job in a collection
     app.post('/favourite', async(req, res)=>{
-      let query = {};
-      if(req.query?.email && req.query?.id){
-        query = {
-          userEmail: req.query.email,
-          job_id: req.query.id
-        }
-      };
-      const isExist = await favouriteColloection.findOne(query);
-      if(isExist){
-       return res.send({message: 'This job already exists in your favourite list!'});
-      } else {
       const favJob = req.body;
       const result = await favouriteColloection.insertOne(favJob);
       res.send(result);
-      }
     })
 
     // get favourite jobs list
@@ -140,7 +130,26 @@ async function run() {
       res.send(result);
     })
 
+    // does exist related api
+    // does exist in favourite
+    app.get('/fav-exist', async(req, res)=>{
+      let query = {};
+      if(req.query?.email && req.query?.id){
+        query = {
+          userEmail: req.query.email,
+          job_id: req.query.id
+        }
+      };
+      const isExist = await favouriteColloection.findOne(query);
+      if(isExist){
+       return res.send({message: true});
+      } else {
+        return res.send({message: false});
+      }
+    })
 
+
+    // user related api
     // create a new user
     app.post("/user", async (req, res) => {
       const newUser = req.body;
