@@ -35,8 +35,8 @@ async function run() {
     const hotJobsCollection = client.db("JobDB").collection("hotjobs");
     const jobsCollection = client.db("JobDB").collection("jobs");
     const userCollection = client.db("JobDB").collection("users");
-    const favouriteColloection = client.db('JobDB').collection('favouritejobs');
-    const appliedColloection = client.db('JobDB').collection('appliedjobs');
+    const favouriteColloection = client.db("JobDB").collection("favouritejobs");
+    const appliedColloection = client.db("JobDB").collection("appliedjobs");
 
     // job related api
     // get all categories
@@ -53,21 +53,27 @@ async function run() {
       res.send(result);
     });
 
-    // get all jobs
-    app.get('/jobs', async(req, res)=>{
+    // get jobs by pagination
+    app.get("/jobs", async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
       const query = {};
       const options = {
-        projection: {_id: 1, company_name: 1, job_title: 1, deadline: 1}
-      }
-      const result = await jobsCollection.find(query, options).toArray();
+        projection: { _id: 1, company_name: 1, job_title: 1, deadline: 1 },
+      };
+      const result = await jobsCollection
+        .find(query, options)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
-    })
+    });
 
     // code for pagination
-    app.get('/jobsCount', async(req, res)=>{
+    app.get("/jobsCount", async (req, res) => {
       const count = await jobsCollection.estimatedDocumentCount();
-      res.send({count});
-    })
+      res.send({ count });
+    });
 
     // get jobs by category
     app.get("/jobs", async (req, res) => {
@@ -87,11 +93,11 @@ async function run() {
     });
 
     // post a job
-    app.post('/job', async(req, res)=>{
+    app.post("/job", async (req, res) => {
       const newJob = req.body;
       const result = await jobsCollection.insertOne(newJob);
       res.send(result);
-    })
+    });
 
     // search by job title
     app.get("/search", async (req, res) => {
@@ -118,69 +124,67 @@ async function run() {
       res.send(result);
     });
 
-
     // post a fovourite job in a collection
-    app.post('/favourite', async(req, res)=>{
+    app.post("/favourite", async (req, res) => {
       const favJob = req.body;
       const result = await favouriteColloection.insertOne(favJob);
       res.send(result);
-    })
+    });
 
     // get favourite jobs list
-    app.get('/favourite', async(req, res)=>{
+    app.get("/favourite", async (req, res) => {
       let query = {};
-      if(req.query?.email){
+      if (req.query?.email) {
         query = {
-          userEmail: req.query.email
-        }
+          userEmail: req.query.email,
+        };
       }
       const result = await favouriteColloection.find(query).toArray();
       res.send(result);
     });
 
     // delete a favourite job
-    app.delete('/favourite/:id', async(req, res)=>{
+    app.delete("/favourite/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await favouriteColloection.deleteOne(query);
       res.send(result);
-    })
+    });
 
     // does exist related api
     // does exist in favourite
-    app.get('/fav-exist', async(req, res)=>{
+    app.get("/fav-exist", async (req, res) => {
       let query = {};
-      if(req.query?.email && req.query?.id){
+      if (req.query?.email && req.query?.id) {
         query = {
           userEmail: req.query.email,
-          job_id: req.query.id
-        }
-      };
-      const isExist = await favouriteColloection.findOne(query);
-      if(isExist){
-       return res.send({message: true});
-      } else {
-        return res.send({message: false});
+          job_id: req.query.id,
+        };
       }
-    })
+      const isExist = await favouriteColloection.findOne(query);
+      if (isExist) {
+        return res.send({ message: true });
+      } else {
+        return res.send({ message: false });
+      }
+    });
 
     // does exist in applied
-    app.get('/applied-exist', async(req, res)=>{
+    app.get("/applied-exist", async (req, res) => {
       let query = {};
-      if(req.query?.email && req.query?.id){
+      if (req.query?.email && req.query?.id) {
         query = {
           userEmail: req.query.email,
-          job_id: req.query.id
-        }
-      };
-      const isExist = await appliedColloection.findOne(query);
-      if(isExist){
-       return res.send({message: true});
-      } else {
-        return res.send({message: false});
+          job_id: req.query.id,
+        };
       }
-    })
-
+      const isExist = await appliedColloection.findOne(query);
+      if (isExist) {
+        return res.send({ message: true });
+      } else {
+        return res.send({ message: false });
+      }
+    });
 
     // user related api
     // create a new user
@@ -190,18 +194,17 @@ async function run() {
       if (exist) {
         return res.send({ message: "User already exists" });
       }
-     if(newUser?.password){
-      const hashedPassword = bcrypt.hashSync(newUser.password, 14);
-      const result = await userCollection.insertOne({
-        ...newUser,
-        password: hashedPassword,
-      })
-      res.send(result);
-    } else {
-      const result = await userCollection.insertOne(newUser);
-      res.send(result);
-    };
-
+      if (newUser?.password) {
+        const hashedPassword = bcrypt.hashSync(newUser.password, 14);
+        const result = await userCollection.insertOne({
+          ...newUser,
+          password: hashedPassword,
+        });
+        res.send(result);
+      } else {
+        const result = await userCollection.insertOne(newUser);
+        res.send(result);
+      }
     });
 
     // get a user by email
@@ -217,49 +220,55 @@ async function run() {
       res.send(result);
     });
 
-    // get all users 
-    app.get('/users', async(req, res)=>{
+    // get all users
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
-    })
+    });
 
     // block an active user
-    app.patch('/user/block/:id', async(req, res)=>{
+    app.patch("/user/block/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert: true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updateStatus = {
         $set: {
-          status: 'blocked'
-        }
+          status: "blocked",
+        },
       };
-      const result = await userCollection.updateOne(filter,updateStatus, options);
+      const result = await userCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
       res.send(result);
-    })
+    });
 
     // unblock an user
-    app.patch('/user/active/:id', async(req, res)=>{
+    app.patch("/user/active/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert: true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updateStatus = {
         $set: {
-          status: 'active'
-        }
+          status: "active",
+        },
       };
-      const result = await userCollection.updateOne(filter,updateStatus, options);
+      const result = await userCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
       res.send(result);
-    })
+    });
 
     // delete a user
-    app.delete('/user/:id', async(req, res)=>{
+    app.delete("/user/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
       res.send(result);
-    })
-
-
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
