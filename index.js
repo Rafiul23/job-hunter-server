@@ -148,6 +148,23 @@ async function run() {
       }
     })
 
+    // does exist in applied
+    app.get('/applied-exist', async(req, res)=>{
+      let query = {};
+      if(req.query?.email && req.query?.id){
+        query = {
+          userEmail: req.query.email,
+          job_id: req.query.id
+        }
+      };
+      const isExist = await appliedColloection.findOne(query);
+      if(isExist){
+       return res.send({message: true});
+      } else {
+        return res.send({message: false});
+      }
+    })
+
 
     // user related api
     // create a new user
