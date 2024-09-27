@@ -7,7 +7,11 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 
 // middlewares
-app.use(cors());
+app.use(cors(
+ {
+  origin: ['http://localhost:3000']
+ }
+));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wlof2pa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -53,6 +57,12 @@ async function run() {
       res.send(result);
     });
 
+    // code for pagination
+    app.get("/jobsCount", async (req, res) => {
+      const count = await jobsCollection.estimatedDocumentCount();
+      res.send({ count });
+    });
+
     // get jobs by pagination
     app.get("/jobs", async (req, res) => {
       const page = parseInt(req.query.page);
@@ -69,11 +79,6 @@ async function run() {
       res.send(result);
     });
 
-    // code for pagination
-    app.get("/jobsCount", async (req, res) => {
-      const count = await jobsCollection.estimatedDocumentCount();
-      res.send({ count });
-    });
 
     // get jobs by category
     app.get("/jobs", async (req, res) => {
