@@ -55,8 +55,18 @@ async function run() {
 
     // get all jobs
     app.get('/jobs', async(req, res)=>{
-      const result = await jobsCollection.find().toArray();
+      const query = {};
+      const options = {
+        projection: {_id: 1, company_name: 1, job_title: 1, deadline: 1}
+      }
+      const result = await jobsCollection.find(query, options).toArray();
       res.send(result);
+    })
+
+    // code for pagination
+    app.get('/jobsCount', async(req, res)=>{
+      const count = await jobsCollection.estimatedDocumentCount();
+      res.send({count});
     })
 
     // get jobs by category
