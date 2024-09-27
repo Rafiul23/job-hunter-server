@@ -36,6 +36,7 @@ async function run() {
     const jobsCollection = client.db("JobDB").collection("jobs");
     const userCollection = client.db("JobDB").collection("users");
     const favouriteColloection = client.db('JobDB').collection('favouritejobs');
+    const appliedColloection = client.db('JobDB').collection('appliedjobs');
 
     // get all categories
     app.get("/categories", async (req, res) => {
@@ -99,6 +100,46 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     });
+
+    // post a fovourite job in a collection
+    app.post('/favourite', async(req, res)=>{
+      let query = {};
+      if(req.query?.email && req.query?.id){
+        query = {
+          userEmail: req.query.email,
+          job_id: req.query.id
+        }
+      };
+      const isExist = await favouriteColloection.findOne(query);
+      if(isExist){
+       return res.send({message: 'This job already exists in your favourite list!'});
+      } else {
+      const favJob = req.body;
+      const result = await favouriteColloection.insertOne(favJob);
+      res.send(result);
+      }
+    })
+
+    // get favourite jobs list
+    app.get('/favourite', async(req, res)=>{
+      let query = {};
+      if(req.query?.email){
+        query = {
+          userEmail: req.query.email
+        }
+      }
+      const result = await favouriteColloection.find(query).toArray();
+      res.send(result);
+    });
+
+    // delete a favourite job
+    app.delete('/favourite/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await favouriteColloection.deleteOne(query);
+      res.send(result);
+    })
+
 
     // create a new user
     app.post("/user", async (req, res) => {
@@ -175,46 +216,6 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     })
-
-    // post a fovourite job in a collection
-    app.post('/favourite', async(req, res)=>{
-      let query = {};
-      if(req.query?.email && req.query?.id){
-        query = {
-          userEmail: req.query.email,
-          job_id: req.query.id
-        }
-      };
-      const isExist = await favouriteColloection.findOne(query);
-      if(isExist){
-       return res.send({message: 'This job already exists in your favourite list!'});
-      } else {
-      const favJob = req.body;
-      const result = await favouriteColloection.insertOne(favJob);
-      res.send(result);
-      }
-    })
-
-    // get favourite jobs list
-    app.get('/favourite', async(req, res)=>{
-      let query = {};
-      if(req.query?.email){
-        query = {
-          userEmail: req.query.email
-        }
-      }
-      const result = await favouriteColloection.find(query).toArray();
-      res.send(result);
-    });
-
-    // delete a favourite job
-    app.delete('/favourite/:id', async(req, res)=>{
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-      const result = await favouriteColloection.deleteOne(query);
-      res.send(result);
-    })
-    
 
 
   } finally {
