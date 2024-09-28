@@ -103,6 +103,12 @@ async function run() {
       res.send(result);
     });
 
+    // delete a job
+    app.delete('/job/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await jobsCollection.deleteOne(query)
+    })
     // search by job title
     app.get("/search", async (req, res) => {
       let query = {};
