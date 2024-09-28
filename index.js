@@ -7,11 +7,11 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 
 // middlewares
-app.use(cors(
- {
-  origin: ['http://localhost:3000']
- }
-));
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wlof2pa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -64,7 +64,7 @@ async function run() {
     });
 
     // get jobs by pagination
-    app.get("/jobs", async (req, res) => {
+    app.get("/jobs/paginated", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       const query = {};
@@ -78,7 +78,6 @@ async function run() {
         .toArray();
       res.send(result);
     });
-
 
     // get jobs by category
     app.get("/jobs", async (req, res) => {
