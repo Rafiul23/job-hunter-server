@@ -111,6 +111,34 @@ async function run() {
       res.send(result);
     });
 
+    // update a job data 
+    app.put("/jobs/:id", async(req, res)=>{
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const updatedJob = req.body;
+      const options = {upsert: true};
+      const updatedDoc = {
+        $set: {
+        company_name: updatedJob.company_name,         
+        job_title: updatedJob.job_title,
+        job_description: updatedJob.job_description,
+        location: updatedJob.location,
+        experience: updatedJob.experience,
+        qualifications: updatedJob.qualifications,
+        salary_range: updatedJob.salary_range,
+        deadline: updatedJob.deadline,
+        category: updatedJob.category,
+        onsite_or_remote: updatedJob.onsite_or_remote,
+        job_type: updatedJob.job_type,
+        employer_email: updatedJob.employer_email,
+        job_post: updatedJob.job_post
+        }
+      };
+
+      const result = await jobsCollection.updateOne(filter, updatedDoc, options);
+      res.send(result);
+    })
+
     // search by job title
     app.get("/search", async (req, res) => {
       let query = {};
