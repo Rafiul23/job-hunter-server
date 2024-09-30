@@ -69,7 +69,7 @@ async function run() {
       const size = parseInt(req.query.size);
       const query = {};
       const options = {
-        projection: { _id: 1, company_name: 1, job_title: 1, deadline: 1 },
+        projection: { _id: 1, company_name: 1, job_title: 1, deadline: 1, status: 1 },
       };
       const result = await jobsCollection
         .find(query, options)
@@ -111,33 +111,51 @@ async function run() {
       res.send(result);
     });
 
-    // update a job data 
-    app.put("/jobs/:id", async(req, res)=>{
+    // update a job data
+    app.put("/jobs/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const updatedJob = req.body;
-      const options = {upsert: true};
+      const options = { upsert: true };
       const updatedDoc = {
         $set: {
-        company_name: updatedJob.company_name,         
-        job_title: updatedJob.job_title,
-        job_description: updatedJob.job_description,
-        location: updatedJob.location,
-        experience: updatedJob.experience,
-        qualifications: updatedJob.qualifications,
-        salary_range: updatedJob.salary_range,
-        deadline: updatedJob.deadline,
-        category: updatedJob.category,
-        onsite_or_remote: updatedJob.onsite_or_remote,
-        job_type: updatedJob.job_type,
-        employer_email: updatedJob.employer_email,
-        job_post: updatedJob.job_post
-        }
+          company_name: updatedJob.company_name,
+          job_title: updatedJob.job_title,
+          job_description: updatedJob.job_description,
+          location: updatedJob.location,
+          experience: updatedJob.experience,
+          qualifications: updatedJob.qualifications,
+          salary_range: updatedJob.salary_range,
+          deadline: updatedJob.deadline,
+          category: updatedJob.category,
+          onsite_or_remote: updatedJob.onsite_or_remote,
+          job_type: updatedJob.job_type,
+          employer_email: updatedJob.employer_email,
+          job_post: updatedJob.job_post,
+        },
       };
 
-      const result = await jobsCollection.updateOne(filter, updatedDoc, options);
+      const result = await jobsCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
       res.send(result);
-    })
+    });
+
+    // api for upgrading a job to hotjob
+    app.patch('/jobs/hot/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const options = { upsert: true};
+      const updateStatus = {
+        $set: {
+          status: 'hot'
+        }
+      };
+      const result = await jobsCollection.updateOne(filter,updateStatus, options);
+      res.send(result);
+    });
 
     // search by job title
     app.get("/search", async (req, res) => {
