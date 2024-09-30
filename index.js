@@ -157,6 +157,20 @@ async function run() {
       res.send(result);
     });
 
+    // downgrade a job
+    app.patch('/jobs/gen/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const options = { upsert: true};
+      const updateStatus = {
+        $set: {
+          status: null
+        }
+      };
+      const result = await jobsCollection.updateOne(filter,updateStatus, options);
+      res.send(result);
+    });
+
     // search by job title
     app.get("/search", async (req, res) => {
       let query = {};
