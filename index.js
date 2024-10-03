@@ -89,6 +89,18 @@ async function run() {
       const appliedJob = req.body;
       const result = await appliedColloection.insertOne(appliedJob);
       res.send(result);
+    });
+
+    // get applied jobs
+    app.get('/applied-jobs', async(req, res)=>{
+      let query = {};
+      if(req?.query?.email){
+        query = {
+          userEmail: req.query.email
+        }
+      }
+      const result = await appliedColloection.find(query).toArray();
+      res.send(result);
     })
 
     // get jobs by category
