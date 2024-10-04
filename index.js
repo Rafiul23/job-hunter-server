@@ -53,11 +53,11 @@ async function run() {
     // get all hotjobs
     app.get("/hotjobs", async (req, res) => {
       let query = {};
-      if(req.query?.status){
+      if (req.query?.status) {
         query = {
-          status: req.query?.status
+          status: req.query?.status,
         };
-      };
+      }
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
@@ -74,7 +74,13 @@ async function run() {
       const size = parseInt(req.query.size);
       const query = {};
       const options = {
-        projection: { _id: 1, company_name: 1, job_title: 1, deadline: 1, status: 1 },
+        projection: {
+          _id: 1,
+          company_name: 1,
+          job_title: 1,
+          deadline: 1,
+          status: 1,
+        },
       };
       const result = await jobsCollection
         .find(query, options)
@@ -85,20 +91,54 @@ async function run() {
     });
 
     // apply on a job
-    app.post('/jobs-apply', async(req, res)=>{
+    app.post("/jobs-apply", async (req, res) => {
       const appliedJob = req.body;
       const result = await appliedColloection.insertOne(appliedJob);
       res.send(result);
     });
 
     // get applied jobs
-    app.get('/applied-jobs', async(req, res)=>{
+    app.get("/applied-jobs", async (req, res) => {
       let query = {};
-      if(req?.query?.email){
+      if (req?.query?.email) {
         query = {
-          userEmail: req.query.email
-        }
+          userEmail: req.query.email,
+        };
       }
+      const result = await appliedColloection.find(query).toArray();
+      res.send(result);
+    });
+
+    // get recruiter's jobs by email
+    app.get("/my-jobs", async (req, res) => {
+      let query = {};
+      if (req?.query?.email) {
+        query = {
+          employer_email: req.query.email,
+        };
+      }
+      const options = {
+        projection: {
+          _id: 1,
+          company_name: 1,
+          job_title: 1,
+          deadline: 1,
+          employer_email: 1,
+        },
+      };
+      const result = await jobsCollection.find(query, options).toArray();
+      res.send(result);
+    });
+
+    // get all resumes for one jobs
+    app.get('/resumes', async(req, res)=>{
+      let query = {};
+      if(req?.query?.id && req?.query?.email){
+        query = {
+          job_id: req.query.id,
+          employer_email: req.query.email
+        }
+      };
       const result = await appliedColloection.find(query).toArray();
       res.send(result);
     })
@@ -168,30 +208,38 @@ async function run() {
     });
 
     // api for upgrading a job to hotjob
-    app.patch('/jobs/hot/:id', async(req, res)=>{
+    app.patch("/jobs/hot/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = { upsert: true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updateStatus = {
         $set: {
-          status: 'hot'
-        }
+          status: "hot",
+        },
       };
-      const result = await jobsCollection.updateOne(filter,updateStatus, options);
+      const result = await jobsCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
       res.send(result);
     });
 
     // downgrade a job
-    app.patch('/jobs/gen/:id', async(req, res)=>{
+    app.patch("/jobs/gen/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
-      const options = { upsert: true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updateStatus = {
         $set: {
-          status: null
-        }
+          status: null,
+        },
       };
-      const result = await jobsCollection.updateOne(filter,updateStatus, options);
+      const result = await jobsCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
       res.send(result);
     });
 
