@@ -424,7 +424,25 @@ async function run() {
       res.send(result);
     });
 
-    
+    // make recruiter api
+    app.patch("/users/recruiter/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateStatus = {
+        $set: {
+          role: "recruiter",
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
+      res.send(result);
+    });
+
+   
 
     // delete a user
     app.delete("/user/:id", async (req, res) => {
