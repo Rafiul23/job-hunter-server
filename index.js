@@ -406,6 +406,26 @@ async function run() {
       res.send(result);
     });
 
+    // make admin api
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateStatus = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updateStatus,
+        options
+      );
+      res.send(result);
+    });
+
+    
+
     // delete a user
     app.delete("/user/:id", async (req, res) => {
       const id = req.params.id;
