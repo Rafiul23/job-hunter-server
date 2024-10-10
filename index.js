@@ -5,11 +5,13 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = 5000 || process.env.PORT;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 // middlewares
 app.use(
   cors({
     origin: ["http://localhost:3000"],
+    credentials: true,
   })
 );
 app.use(express.json());
@@ -36,7 +38,6 @@ async function run() {
     );
 
     const categoryCollection = client.db("JobDB").collection("categories");
-    const hotJobsCollection = client.db("JobDB").collection("hotjobs");
     const jobsCollection = client.db("JobDB").collection("jobs");
     const userCollection = client.db("JobDB").collection("users");
     const favouriteColloection = client.db("JobDB").collection("favouritejobs");
@@ -97,6 +98,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - loggedin user only - need verifyToken
     // get applied jobs
     app.get("/applied-jobs", async (req, res) => {
       let query = {};
@@ -109,6 +111,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - recruiter only
     // get recruiter's jobs by email
     app.get("/my-jobs", async (req, res) => {
       let query = {};
@@ -130,18 +133,19 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - recruiter only
     // get all resumes for one jobs
-    app.get('/resumes', async(req, res)=>{
+    app.get("/resumes", async (req, res) => {
       let query = {};
-      if(req?.query?.id && req?.query?.email){
+      if (req?.query?.id && req?.query?.email) {
         query = {
           job_id: req.query.id,
-          employer_email: req.query.email
-        }
-      };
+          employer_email: req.query.email,
+        };
+      }
       const result = await appliedColloection.find(query).toArray();
       res.send(result);
-    })
+    });
 
     // get jobs by category
     app.get("/jobs", async (req, res) => {
@@ -160,6 +164,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // post a job
     app.post("/job", async (req, res) => {
       const newJob = req.body;
@@ -167,6 +172,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // delete a job
     app.delete("/jobs/:id", async (req, res) => {
       const id = req.params.id;
@@ -175,6 +181,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // update a job data
     app.put("/jobs/:id", async (req, res) => {
       const id = req.params.id;
@@ -207,6 +214,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // api for upgrading a job to hotjob
     app.patch("/jobs/hot/:id", async (req, res) => {
       const id = req.params.id;
@@ -225,6 +233,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // downgrade a job
     app.patch("/jobs/gen/:id", async (req, res) => {
       const id = req.params.id;
@@ -275,6 +284,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - loggedin user only - need verifyToken
     // get favourite jobs list
     app.get("/favourite", async (req, res) => {
       let query = {};
@@ -287,6 +297,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - loggedin user only - need verifyToken
     // delete a favourite job
     app.delete("/favourite/:id", async (req, res) => {
       const id = req.params.id;
@@ -296,6 +307,7 @@ async function run() {
     });
 
     // does exist related api
+    // security needed - loggedin user only - need verifyToken
     // does exist in favourite
     app.get("/fav-exist", async (req, res) => {
       let query = {};
@@ -313,6 +325,7 @@ async function run() {
       }
     });
 
+    // security needed - loggedin user only - need verifyToken
     // does exist in applied
     app.get("/applied-exist", async (req, res) => {
       let query = {};
@@ -351,6 +364,22 @@ async function run() {
       }
     });
 
+    // jwt related api
+    // post a jwt
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      // console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "6h",
+      });
+      res.cookie("token", token, {
+          httpOnly: true,
+          secure: false
+        })
+        .send({ success: true });
+    });
+
+    // security needed - loggedin user only - need verifyToken
     // get a user by email
     app.get("/user", async (req, res) => {
       let query = {};
@@ -364,12 +393,14 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // get all users
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
+    // security needed - admin only
     // block an active user
     app.patch("/user/block/:id", async (req, res) => {
       const id = req.params.id;
@@ -388,6 +419,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // unblock an user
     app.patch("/user/active/:id", async (req, res) => {
       const id = req.params.id;
@@ -406,6 +438,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // make admin api
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
@@ -424,6 +457,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // make recruiter api
     app.patch("/users/recruiter/:id", async (req, res) => {
       const id = req.params.id;
@@ -442,6 +476,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // make user api
     app.patch("/users/user/:id", async (req, res) => {
       const id = req.params.id;
@@ -460,6 +495,7 @@ async function run() {
       res.send(result);
     });
 
+    // security needed - admin only
     // delete a user
     app.delete("/user/:id", async (req, res) => {
       const id = req.params.id;
