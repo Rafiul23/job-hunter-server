@@ -6,6 +6,7 @@ const port = 5000 || process.env.PORT;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cookieParser = require('cookie-parser');
 
 // middlewares
 app.use(
@@ -14,6 +15,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(cookieParser());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wlof2pa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -26,6 +29,11 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+// middleware
+const verifyToken = (req, res, next){
+  
+}
 
 async function run() {
   try {
