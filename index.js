@@ -57,6 +57,18 @@ const verifyToken = (req, res, next)=>{
   }
  }
 
+ const verifyRecruiter = async(req, res, next)=>{
+  const email = req.user.email;
+  const query = {email: email};
+  const user = await userCollection.findOne(query);
+  const isAdmin = user.role === 'recruiter';
+  if(!isAdmin){
+   return res.status(403).send({message: 'Forbidden Access'});
+  } else {
+    next();
+  }
+ }
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
