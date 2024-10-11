@@ -372,11 +372,19 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "6h",
       });
-      res.cookie("token", token, {
+      res
+        .cookie("token", token, {
           httpOnly: true,
-          secure: false
+          secure: false,
         })
         .send({ success: true });
+    });
+
+    // clear token from cookie when user logged out
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("log out user", user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
     // security needed - loggedin user only - need verifyToken
