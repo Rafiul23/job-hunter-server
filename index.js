@@ -134,8 +134,11 @@ async function run() {
 
     // security needed - recruiter only
     // get recruiter's jobs by email
-    app.get("/my-jobs", async (req, res) => {
+    app.get("/my-jobs", verifyToken, async (req, res) => {
       let query = {};
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       if (req?.query?.email) {
         query = {
           employer_email: req.query.email,
@@ -156,7 +159,10 @@ async function run() {
 
     // security needed - recruiter only
     // get all resumes for one jobs
-    app.get("/resumes", async (req, res) => {
+    app.get("/resumes", verifyToken, async (req, res) => {
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       let query = {};
       if (req?.query?.id && req?.query?.email) {
         query = {
@@ -187,7 +193,7 @@ async function run() {
 
     // security needed - admin only
     // post a job
-    app.post("/job", async (req, res) => {
+    app.post("/job", verifyToken, async (req, res) => {
       const newJob = req.body;
       const result = await jobsCollection.insertOne(newJob);
       res.send(result);
@@ -195,7 +201,7 @@ async function run() {
 
     // security needed - admin only
     // delete a job
-    app.delete("/jobs/:id", async (req, res) => {
+    app.delete("/jobs/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await jobsCollection.deleteOne(query);
@@ -204,7 +210,7 @@ async function run() {
 
     // security needed - admin only
     // update a job data
-    app.put("/jobs/:id", async (req, res) => {
+    app.put("/jobs/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedJob = req.body;
@@ -237,7 +243,7 @@ async function run() {
 
     // security needed - admin only
     // api for upgrading a job to hotjob
-    app.patch("/jobs/hot/:id", async (req, res) => {
+    app.patch("/jobs/hot/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -256,7 +262,7 @@ async function run() {
 
     // security needed - admin only
     // downgrade a job
-    app.patch("/jobs/gen/:id", async (req, res) => {
+    app.patch("/jobs/gen/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -307,7 +313,10 @@ async function run() {
 
     // security needed - loggedin user only - need verifyToken
     // get favourite jobs list
-    app.get("/favourite", async (req, res) => {
+    app.get("/favourite", verifyToken, async (req, res) => {
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       let query = {};
       if (req.query?.email) {
         query = {
@@ -320,7 +329,7 @@ async function run() {
 
     // security needed - loggedin user only - need verifyToken
     // delete a favourite job
-    app.delete("/favourite/:id", async (req, res) => {
+    app.delete("/favourite/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await favouriteColloection.deleteOne(query);
@@ -330,7 +339,10 @@ async function run() {
     // does exist related api
     // security needed - loggedin user only - need verifyToken
     // does exist in favourite
-    app.get("/fav-exist", async (req, res) => {
+    app.get("/fav-exist", verifyToken, async (req, res) => {
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       let query = {};
       if (req.query?.email && req.query?.id) {
         query = {
@@ -348,7 +360,10 @@ async function run() {
 
     // security needed - loggedin user only - need verifyToken
     // does exist in applied
-    app.get("/applied-exist", async (req, res) => {
+    app.get("/applied-exist", verifyToken, async (req, res) => {
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       let query = {};
       if (req.query?.email && req.query?.id) {
         query = {
@@ -408,7 +423,7 @@ async function run() {
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
-    // security needed - loggedin user only - need verifyToken
+    
     // get a user by email
     app.get("/user", async (req, res) => {
       let query = {};
@@ -424,14 +439,14 @@ async function run() {
 
     // security needed - admin only
     // get all users
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
     // security needed - admin only
     // block an active user
-    app.patch("/user/block/:id", async (req, res) => {
+    app.patch("/user/block/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -450,7 +465,7 @@ async function run() {
 
     // security needed - admin only
     // unblock an user
-    app.patch("/user/active/:id", async (req, res) => {
+    app.patch("/user/active/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -469,7 +484,7 @@ async function run() {
 
     // security needed - admin only
     // make admin api
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/admin/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -488,7 +503,7 @@ async function run() {
 
     // security needed - admin only
     // make recruiter api
-    app.patch("/users/recruiter/:id", async (req, res) => {
+    app.patch("/users/recruiter/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -507,7 +522,7 @@ async function run() {
 
     // security needed - admin only
     // make user api
-    app.patch("/users/user/:id", async (req, res) => {
+    app.patch("/users/user/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -526,7 +541,7 @@ async function run() {
 
     // security needed - admin only
     // delete a user
-    app.delete("/user/:id", async (req, res) => {
+    app.delete("/user/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
