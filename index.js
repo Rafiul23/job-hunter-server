@@ -31,8 +31,18 @@ const client = new MongoClient(uri, {
 });
 
 // middleware
-const verifyToken = (req, res, next){
-  
+const verifyToken = (req, res, next)=>{
+  const token = req?.cookies?.token;
+  if(!token){
+    return res.status(401).send({message: 'Unauthorized access'});
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=>{
+    if(err){
+      return res.status(401).send({message: 'Unauthorized access'});
+    }
+    req.user = decoded;
+    next();
+  })
 }
 
 async function run() {
@@ -108,8 +118,11 @@ async function run() {
 
     // security needed - loggedin user only - need verifyToken
     // get applied jobs
-    app.get("/applied-jobs", async (req, res) => {
+    app.get("/applied-jobs", verifyToken, async (req, res) => {
       let query = {};
+      if(req.user.email !== req?.query?.email){
+        return res.status(403).send({message: 'Forbidden access'});
+      }
       if (req?.query?.email) {
         query = {
           userEmail: req.query.email,
