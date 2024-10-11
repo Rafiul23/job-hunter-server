@@ -45,6 +45,10 @@ const verifyToken = (req, res, next)=>{
   })
 }
 
+ const verifyAdmin = (req, res, next)=>{
+  
+ }
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
