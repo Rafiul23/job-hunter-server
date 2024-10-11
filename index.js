@@ -34,19 +34,27 @@ const client = new MongoClient(uri, {
 const verifyToken = (req, res, next)=>{
   const token = req?.cookies?.token;
   if(!token){
-    return res.status(401).send({message: 'Unauthorized access'});
+    return res.status(401).send({message: 'Unauthorized Access'});
   }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=>{
     if(err){
-      return res.status(401).send({message: 'Unauthorized access'});
+      return res.status(401).send({message: 'Unauthorized Access'});
     }
     req.user = decoded;
     next();
   })
 }
 
- const verifyAdmin = (req, res, next)=>{
-  
+ const verifyAdmin = async(req, res, next)=>{
+  const email = req.user.email;
+  const query = {email: email};
+  const user = await userCollection.findOne(query);
+  const isAdmin = user.role === 'admin';
+  if(!isAdmin){
+   return res.status(403).send({message: 'Forbidden Access'});
+  } else {
+    next();
+  }
  }
 
 async function run() {
