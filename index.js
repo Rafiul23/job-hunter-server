@@ -33,6 +33,7 @@ const client = new MongoClient(uri, {
 // middleware
 const verifyToken = (req, res, next)=>{
   const token = req?.cookies?.token;
+  console.log('token in verify token', token);
   if(!token){
     return res.status(401).send({message: 'Unauthorized Access'});
   }
@@ -41,33 +42,10 @@ const verifyToken = (req, res, next)=>{
       return res.status(401).send({message: 'Unauthorized Access'});
     }
     req.user = decoded;
+    console.log(req.user);
     next();
   })
 }
-
- const verifyAdmin = async(req, res, next)=>{
-  const email = req.user.email;
-  const query = {email: email};
-  const user = await userCollection.findOne(query);
-  const isAdmin = user.role === 'admin';
-  if(!isAdmin){
-   return res.status(403).send({message: 'Forbidden Access'});
-  } else {
-    next();
-  }
- }
-
- const verifyRecruiter = async(req, res, next)=>{
-  const email = req.user.email;
-  const query = {email: email};
-  const user = await userCollection.findOne(query);
-  const isAdmin = user.role === 'recruiter';
-  if(!isAdmin){
-   return res.status(403).send({message: 'Forbidden Access'});
-  } else {
-    next();
-  }
- }
 
 async function run() {
   try {
@@ -84,6 +62,33 @@ async function run() {
     const userCollection = client.db("JobDB").collection("users");
     const favouriteColloection = client.db("JobDB").collection("favouritejobs");
     const appliedColloection = client.db("JobDB").collection("appliedjobs");
+
+    // middleware for verifying admin
+    const verifyAdmin = async(req, res, next)=>{
+      const email = req.user.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isAdmin = user.role === 'admin';
+      if(!isAdmin){
+       return res.status(403).send({message: 'Forbidden Access'});
+      } else {
+        next();
+      }
+     }
+
+    //  middleware for verifying recruiter
+     const verifyRecruiter = async(req, res, next)=>{
+      const email = req.user.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isAdmin = user.role === 'recruiter';
+      if(!isAdmin){
+       return res.status(403).send({message: 'Forbidden Access'});
+      } else {
+        next();
+      }
+     }
+
 
     // job related api
     // get all categories
@@ -161,7 +166,7 @@ async function run() {
     app.get("/my-jobs", verifyToken, verifyRecruiter, async (req, res) => {
       let query = {};
       if(req.user.email !== req?.query?.email){
-        return res.status(403).send({message: 'Forbidden access'});
+        return res.status(403).send({message: 'Forbidden Access'});
       }
       if (req?.query?.email) {
         query = {
