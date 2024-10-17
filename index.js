@@ -11,7 +11,9 @@ const cookieParser = require('cookie-parser');
 // middlewares
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000",
+      "https://job-hunter-globe.vercel.app"
+    ],
     credentials: true,
   })
 );
@@ -33,7 +35,7 @@ const client = new MongoClient(uri, {
 // middleware
 const verifyToken = (req, res, next)=>{
   const token = req?.cookies?.token;
-  console.log('token in verify token', token);
+  // console.log('token in verify token', token);
   if(!token){
     return res.status(401).send({message: 'Unauthorized Access'});
   }
@@ -42,20 +44,26 @@ const verifyToken = (req, res, next)=>{
       return res.status(401).send({message: 'Unauthorized Access'});
     }
     req.user = decoded;
-    console.log(req.user);
+    // console.log(req.user);
     next();
   })
+}
+
+const cookieOption = {
+  httpOnly: true,
+  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production' ? true : false,
 }
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
 
     const categoryCollection = client.db("JobDB").collection("categories");
     const jobsCollection = client.db("JobDB").collection("jobs");
@@ -433,23 +441,20 @@ async function run() {
     // post a jwt
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      // console.log(user);
+      console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "6h",
       });
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: false,
-        })
+      res.cookie("token", token, cookieOption)
         .send({ success: true });
+      // console.log('token is set')  
     });
 
     // clear token from cookie when user logged out
     app.post("/logout", async (req, res) => {
       const user = req.body;
       console.log("log out user", user);
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      res.clearCookie("token", { ...cookieOption, maxAge: 0 }).send({ success: true });
     });
 
     
