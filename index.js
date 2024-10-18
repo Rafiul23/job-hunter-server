@@ -51,7 +51,7 @@ const verifyToken = (req, res, next)=>{
 
 const cookieOption = {
   httpOnly: true,
-  sameSite: 'strict',
+  sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production' ? true : false,
 }
 
