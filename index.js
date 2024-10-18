@@ -51,7 +51,7 @@ const verifyToken = (req, res, next)=>{
 
 const cookieOption = {
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: 'none',
   secure: process.env.NODE_ENV === 'production' ? true : false,
 }
 
@@ -441,7 +441,7 @@ async function run() {
     // post a jwt
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "6h",
       });
@@ -453,7 +453,7 @@ async function run() {
     // clear token from cookie when user logged out
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("log out user", user);
+      // console.log("log out user", user);
       res.clearCookie("token", { ...cookieOption, maxAge: 0 }).send({ success: true });
     });
 
